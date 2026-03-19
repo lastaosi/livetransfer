@@ -16,3 +16,6 @@ local.properties
 
 # Google Services (Firebase API keys - DO NOT commit to public repo)
 google-services.json
+
+# Claude Code instructions (internal use only)
+CLAUDE.md
