@@ -1,4 +1,4 @@
-package com.jh.livetransfer.ui.screen.main
+package com.jh.livetransfer.ui.screen.translation
 
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -14,7 +14,7 @@ import androidx.compose.ui.unit.dp
 fun AudioWaveform(
     amplitudes: List<Float>, // 0.0 ~ 1.0 사이의 값 리스트
     modifier: Modifier = Modifier,
-    barColor: Color = Color(0xFF6200EE) // 보라색 (원하는 색으로 변경 가능)
+    barColor: Color = Color(0xFF6200EE)
 ) {
     Canvas(
         modifier = modifier.height(80.dp)
@@ -22,10 +22,9 @@ fun AudioWaveform(
         val barWidth = 10.dp.toPx()
         val gap = 4.dp.toPx()
         val centerY = size.height / 2f
-        val startX = 0f // 왼쪽부터 그림
+        val startX = 0f
 
         amplitudes.forEachIndexed { index, amp ->
-            // 높이 계산 (최소 높이 보장)
             val barHeight = (size.height * amp * 0.8f).coerceAtLeast(10f)
             val x = startX + index * (barWidth + gap)
 

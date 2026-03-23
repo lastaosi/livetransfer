@@ -1,4 +1,4 @@
-package com.jh.livetransfer.ui.screen.main
+package com.jh.livetransfer.ui.screen.translation
 
 import android.Manifest
 import android.content.pm.PackageManager
@@ -9,7 +9,6 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
-import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -31,13 +30,11 @@ import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.VolumeOff
 import androidx.compose.material.icons.filled.CameraAlt
 import androidx.compose.material.icons.filled.Mic
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.Stop
 import androidx.compose.material.icons.filled.VolumeOff
-import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FabPosition
@@ -54,29 +51,24 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.graphics.Canvas
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
-import com.jh.livetransfer.domain.model.ChatMessage
+import com.jh.livetransfer.data.model.ChatMessage
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun MainScreen(
-    viewModel: MainViewModel,
+fun TranslationScreen(
+    viewModel: TranslationViewModel,
     onSettingsClick: () -> Unit
 ) {
-    // 1. 상태 수집 (State Hoisting)
     val chatMessages by viewModel.chatMessages.collectAsState()
     val isRecording by viewModel.isRecording.collectAsState()
     val isImageLoading by viewModel.isImageLoading.collectAsState()
     val audioAmplitudes by viewModel.audioAmplitudes.collectAsState()
     val isTtsSpeaking by viewModel.isTtsSpeaking.collectAsState()
 
-    // One-shot 이벤트 수집 — SharedFlow이므로 collectAsState 대신 LaunchedEffect 사용
     val context = LocalContext.current
     LaunchedEffect(viewModel) {
         viewModel.uiEvent.collect { event ->
@@ -87,22 +79,18 @@ fun MainScreen(
         }
     }
 
-    // 2. 전체 레이아웃 (Box를 최상위에 두어 로딩 화면을 덮어씌움)
     Box(modifier = Modifier.fillMaxSize()) {
-
         Scaffold(
             topBar = {
-                MainTopBar(onSettingsClick)
+                TranslationTopBar(onSettingsClick)
             },
             floatingActionButton = {
-                // 카메라 버튼 (권한 체크 및 실행 로직 포함)
                 CameraFloatingActionButton(
                     onImageCaptured = { bitmap -> viewModel.translateCapturedImage(bitmap) }
                 )
             },
             floatingActionButtonPosition = FabPosition.End
         ) { paddingValues ->
-
             Column(
                 modifier = Modifier
                     .fillMaxSize()
@@ -110,7 +98,6 @@ fun MainScreen(
                     .padding(16.dp),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                // 3. 채팅 리스트 (화면의 대부분 차지)
                 ChatListSection(
                     messages = chatMessages,
                     modifier = Modifier.weight(1f)
@@ -118,12 +105,10 @@ fun MainScreen(
 
                 Spacer(modifier = Modifier.height(16.dp))
 
-                // 4. 오디오 파형 (녹음 중일 때 움직임)
                 AudioVisualizerSection(amplitudes = audioAmplitudes)
 
                 Spacer(modifier = Modifier.height(24.dp))
 
-                // 5. 하단 컨트롤러 (마이크 & TTS 중지 버튼)
                 BottomControlsSection(
                     isRecording = isRecording,
                     isTtsSpeaking = isTtsSpeaking,
@@ -133,7 +118,6 @@ fun MainScreen(
             }
         }
 
-        // 6. 로딩 오버레이 (이미지 분석 중일 때)
         if (isImageLoading) {
             LoadingOverlay("이미지 분석 중...")
         }
@@ -141,12 +125,12 @@ fun MainScreen(
 }
 
 // ========================================================================
-// 👇 하위 컴포넌트 구현부 (복잡도 분리)
+// 하위 컴포넌트
 // ========================================================================
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-private fun MainTopBar(onSettingsClick: () -> Unit) {
+private fun TranslationTopBar(onSettingsClick: () -> Unit) {
     TopAppBar(
         title = { Text("AI 실시간 통역") },
         actions = {
@@ -159,12 +143,11 @@ private fun MainTopBar(onSettingsClick: () -> Unit) {
 
 @Composable
 private fun ChatListSection(
-    messages: List<ChatMessage>, // 패키지 경로 주의
+    messages: List<ChatMessage>,
     modifier: Modifier = Modifier
 ) {
     val listState = rememberLazyListState()
 
-    // 메시지 추가 시 자동 스크롤
     LaunchedEffect(messages.size) {
         if (messages.isNotEmpty()) {
             listState.animateScrollToItem(messages.size - 1)
@@ -184,10 +167,8 @@ private fun ChatListSection(
 
 @Composable
 private fun ChatMessageItem(message: ChatMessage) {
-    // 내 메시지: 오른쪽(노랑), AI 메시지: 왼쪽(회색)
     val alignment = if (message.isMine) Alignment.CenterEnd else Alignment.CenterStart
     val backgroundColor = if (message.isMine) Color(0xFFFFF59D) else Color(0xFFE0E0E0)
-    val textColor = Color.Black
 
     Box(
         modifier = Modifier
@@ -198,9 +179,9 @@ private fun ChatMessageItem(message: ChatMessage) {
         Text(
             text = message.text,
             style = MaterialTheme.typography.bodyMedium,
-            color = textColor,
+            color = Color.Black,
             modifier = Modifier
-                .widthIn(max = 280.dp) // 말풍선 최대 너비 제한
+                .widthIn(max = 280.dp)
                 .background(backgroundColor, shape = RoundedCornerShape(12.dp))
                 .padding(12.dp)
         )
@@ -216,8 +197,6 @@ private fun AudioVisualizerSection(amplitudes: List<Float>) {
             color = Color.Gray
         )
         Spacer(modifier = Modifier.height(8.dp))
-
-        // 파형 그리기
         AudioWaveform(
             amplitudes = amplitudes,
             modifier = Modifier.fillMaxWidth(),
@@ -225,12 +204,6 @@ private fun AudioVisualizerSection(amplitudes: List<Float>) {
         )
     }
 }
-
-/**
- * [AudioWaveform]
- * - 오디오 진폭 데이터를 받아 캔버스에 그리는 함수
- * - 중앙을 기준으로 위아래로 퍼지는 미러링 효과 적용
- */
 
 @Composable
 private fun BottomControlsSection(
@@ -241,7 +214,6 @@ private fun BottomControlsSection(
 ) {
     val context = LocalContext.current
 
-    // 권한 요청 런처
     val permissionLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.RequestMultiplePermissions()
     ) { permissions ->
@@ -258,14 +230,12 @@ private fun BottomControlsSection(
         horizontalArrangement = Arrangement.Center,
         modifier = Modifier.fillMaxWidth()
     ) {
-        // 1. 마이크 버튼 (메인)
         IconButton(
             onClick = {
                 val hasAudio = ContextCompat.checkSelfPermission(
                     context, Manifest.permission.RECORD_AUDIO
                 ) == PackageManager.PERMISSION_GRANTED
 
-                // 카메라는 필수는 아니지만, 보통 같이 요청하면 편함. 여기선 오디오만 체크.
                 if (hasAudio) {
                     onToggleRecording()
                 } else {
@@ -287,7 +257,6 @@ private fun BottomControlsSection(
             )
         }
 
-        // 2. TTS 중지 버튼 (말하고 있을 때만 옆에 뿅 나타남)
         AnimatedVisibility(
             visible = isTtsSpeaking,
             enter = fadeIn(),

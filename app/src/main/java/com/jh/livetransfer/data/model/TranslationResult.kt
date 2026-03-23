@@ -1,4 +1,4 @@
-package com.jh.livetransfer.domain.model
+package com.jh.livetransfer.data.model
 
 data class TranslationResult(
     val originalText: String,

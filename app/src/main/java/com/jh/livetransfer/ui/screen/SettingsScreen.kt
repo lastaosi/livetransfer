@@ -8,8 +8,8 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
-import com.jh.livetransfer.domain.model.SpeechSpeed
-import com.jh.livetransfer.ui.screen.main.MainViewModel
+import com.jh.livetransfer.data.model.SpeechSpeed
+import com.jh.livetransfer.ui.screen.translation.TranslationViewModel
 
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -18,16 +18,15 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material3.*
-import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import com.jh.livetransfer.domain.model.SUPPORTED_LANGUAGES
+import com.jh.livetransfer.data.model.SUPPORTED_LANGUAGES
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SettingsScreen(
-    viewModel: MainViewModel,
+    viewModel: TranslationViewModel,
     onBackClick: () -> Unit
 ) {
     val langA by viewModel.currentLangA.collectAsState()

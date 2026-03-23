@@ -1,7 +1,7 @@
 package com.jh.livetransfer.data.source.remote
 
 import com.google.firebase.vertexai.GenerativeModel
-import com.jh.livetransfer.domain.model.TranslationResult
+import com.jh.livetransfer.data.model.TranslationResult
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 import javax.inject.Inject

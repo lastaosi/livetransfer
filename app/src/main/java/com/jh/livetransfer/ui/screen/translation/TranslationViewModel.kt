@@ -1,12 +1,12 @@
-package com.jh.livetransfer.ui.screen.main
+package com.jh.livetransfer.ui.screen.translation
 
 import android.annotation.SuppressLint
 import android.graphics.Bitmap
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.jh.livetransfer.data.repository.SettingsRepository
-import com.jh.livetransfer.domain.model.ChatMessage
-import com.jh.livetransfer.domain.model.SpeechSpeed
+import com.jh.livetransfer.data.model.ChatMessage
+import com.jh.livetransfer.data.model.SpeechSpeed
 import com.jh.livetransfer.domain.repository.TranslationRepository
 import com.jh.livetransfer.util.AudioUtil
 import com.jh.livetransfer.util.L
@@ -43,7 +43,7 @@ private data class AppSettings(
 )
 
 @HiltViewModel
-class MainViewModel @Inject constructor(
+class TranslationViewModel @Inject constructor(
     private val vadProcessor: VadProcessor,
     private val translationRepository: TranslationRepository,
     private val ttsManager: TtsManager,
