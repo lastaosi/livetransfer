@@ -8,9 +8,13 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 
+/**
+ * 날씨 설정 화면. [STUB / 미구현]
+ * 현재 "준비 중" 텍스트만 표시. 향후 도시 관리 UI 등을 추가할 화면.
+ */
 @Composable
 fun WeatherSettingScreen(
-    onSettingClick : () -> Unit
+    onSettingClick: () -> Unit
 ) {
     Box(
         modifier = Modifier.fillMaxSize(),

@@ -7,10 +7,16 @@ import android.media.MediaRecorder
 import dagger.hilt.android.qualifiers.ApplicationContext
 import javax.inject.Inject
 
+/**
+ * AudioRecord 래퍼 클래스. [STUB / 미사용]
+ *
+ * 실제 녹음 로직은 [AudioCaptureManager]가 Flow 기반으로 구현되어 있으며,
+ * 이 클래스는 초기 뼈대만 존재하고 DI 그래프에 연결되지 않았다.
+ */
 class AudioRecorder @Inject constructor(
     @ApplicationContext private val context: Context
 ) {
-    // 실시간 음성 스트리밍 처리 로직 (예시 뼈대)
+    // TODO: AudioCaptureManager와 통합하거나 제거 검토
     fun startRecording() {
         // AudioRecord 설정 및 데이터 수집 시작
     }

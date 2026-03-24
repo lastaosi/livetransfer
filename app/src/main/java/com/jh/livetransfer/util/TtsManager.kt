@@ -8,6 +8,14 @@ import java.util.Locale
 import javax.inject.Inject
 import javax.inject.Singleton
 
+/**
+ * Android TextToSpeech 래퍼. @Singleton으로 앱 생명주기와 함께한다.
+ *
+ * - 초기화는 생성 시점에 비동기로 시작되며, onInit 콜백에서 완료 여부를 확인.
+ * - 발화 시작/종료를 [onSpeakingStateChanged] 콜백으로 외부에 알려
+ *   ViewModel이 isTtsSpeaking StateFlow를 업데이트하도록 한다.
+ * - QUEUE_FLUSH: 새 발화 요청 시 이전 큐를 비워 즉시 새 텍스트를 읽음.
+ */
 @Singleton
 class TtsManager @Inject constructor(
     @ApplicationContext context: Context
@@ -16,12 +24,12 @@ class TtsManager @Inject constructor(
     private var isInitialized = false
 
     init {
-        // 객체가 생성될때 TTS 초기화 시작
+        // 객체 생성 시점에 TTS 엔진 초기화 시작 (비동기 — onInit 콜백에서 완료 확인)
         tts = TextToSpeech(context, this)
-
     }
 
-    var onSpeakingStateChanged : ((Boolean)->Unit)? = null
+    /** 발화 상태 변경 콜백. true = 시작, false = 완료/에러 */
+    var onSpeakingStateChanged: ((Boolean) -> Unit)? = null
 
     override fun onInit(status: Int) {
         if (status == TextToSpeech.SUCCESS) {
@@ -38,47 +46,45 @@ class TtsManager @Inject constructor(
                 override fun onError(utteranceId: String?) {
                     onSpeakingStateChanged?.invoke(false)
                 }
-
             })
-
-
             L.d("TTS 초기화 성공")
         } else {
             L.d("TTS 초기화 실패")
         }
-
     }
 
-    fun speak(text: String,languageCode : String) {
+    /**
+     * 지정 언어로 텍스트를 읽는다.
+     *
+     * @param languageCode BCP-47 로케일 코드 (예: "ko-KR", "en-US")
+     * 기기에 해당 언어 음성 데이터가 없으면 에러 로그 후 조용히 무시.
+     */
+    fun speak(text: String, languageCode: String) {
         if (!isInitialized) {
             L.w("TTS is not initialized")
             return
         }
-        // 💡 2. 문자열 언어 코드("en-US", "ko-KR" 등)를 Locale 객체로 변환하여 TTS에 세팅
         val locale = Locale.forLanguageTag(languageCode)
         val result = tts?.setLanguage(locale)
 
-        // 💡 3. 해당 기기(스마트폰)에 그 언어의 음성 데이터가 없는 경우의 방어 코드
+        // 기기에 언어 음성 데이터가 없는 경우 방어
         if (result == TextToSpeech.LANG_MISSING_DATA || result == TextToSpeech.LANG_NOT_SUPPORTED) {
             L.e("TTS 오류: 기기에서 지원하지 않는 언어입니다 ($languageCode)")
-            // 필요하다면 여기에 토스트 메시지를 띄우거나, 기본 언어로 Fallback 처리할 수 있습니다.
             return
         }
 
-        tts?.speak(text, TextToSpeech.QUEUE_FLUSH,null,"TTS_ID")
-
-
+        tts?.speak(text, TextToSpeech.QUEUE_FLUSH, null, "TTS_ID")
     }
 
-    fun stop(){
+    /** 현재 발화 즉시 중단 */
+    fun stop() {
         tts?.stop()
     }
 
-    fun shutdown(){
+    /** ViewModel onCleared()에서 호출. 리소스를 완전히 해제한다. */
+    fun shutdown() {
         tts?.stop()
         tts?.shutdown()
         tts = null
     }
-
-
 }

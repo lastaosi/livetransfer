@@ -40,6 +40,10 @@ import com.jh.livetransfer.ui.theme.LiveTransferTheme
 import dagger.hilt.android.AndroidEntryPoint
 
 
+/**
+ * 앱의 유일한 Activity. Single-Activity 아키텍처.
+ * Compose setContent로 루트 UI를 설정하고 이후 모든 화면은 Navigation Compose가 담당한다.
+ */
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -52,6 +56,15 @@ class MainActivity : ComponentActivity() {
     }
 }
 
+/**
+ * 앱 최상위 네비게이션 구조.
+ * BottomNavigationBar로 3개 탭(번역 / 날씨 / 환율)을 전환하며,
+ * 각 탭은 내부에 별도 NavHost(중첩 네비게이션)를 가진다.
+ *
+ * - Translation 탭: TranslationNavigation (번역 ↔ 설정)
+ * - Weather 탭: WeatherNavigation (날씨 메인 ↔ 날씨 설정)
+ * - Exchange 탭: ExchangeRateScreen (단일 화면, 미구현)
+ */
 @Composable
 private fun AppNavigation() {
     val navController = rememberNavController()
@@ -68,6 +81,7 @@ private fun AppNavigation() {
                         selected = currentRoute == item.route,
                         onClick = {
                             navController.navigate(item.route){
+                                // 뒤로가기 시 스택이 쌓이지 않도록 startDestination까지 팝
                                 popUpTo(navController.graph.startDestinationId)
                                 launchSingleTop = true
                             }
@@ -83,6 +97,7 @@ private fun AppNavigation() {
             modifier = Modifier.padding(paddingValues)
         ){
             composable(BottomNavItem.Translation.route){
+                // ViewModel을 여기서 생성해 TranslationNavigation 전체에 공유
                 val viewModel: TranslationViewModel = hiltViewModel()
                 TranslationNavigation(viewModel = viewModel)
             }
@@ -99,7 +114,10 @@ private fun AppNavigation() {
 
 }
 
-
+/**
+ * 하단 네비게이션 탭 정의.
+ * sealed class로 타입 안전하게 관리하며, route/label/icon을 한 곳에서 선언.
+ */
 sealed class BottomNavItem(
     val route: String,
     val label: String,

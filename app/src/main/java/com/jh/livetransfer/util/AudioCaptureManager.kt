@@ -21,18 +21,26 @@ import java.util.concurrent.atomic.AtomicBoolean
 import javax.inject.Inject
 import javax.inject.Singleton
 
+/**
+ * Android AudioRecord 래퍼. 마이크 입력을 PCM ByteArray Flow로 방출한다.
+ *
+ * - 포맷: 16kHz / Mono / PCM 16bit (Gemini API 권장 포맷)
+ * - [isRecording]: AtomicBoolean으로 멀티스레드 안전 상태 관리
+ * - [stopRecording]: @Synchronized + recordingState 이중 체크로 중복 호출 방어
+ * - Flow는 [VadProcessor]에서 수집되며, stopRecording() 호출 시 while 루프 탈출 → Flow 자연 완료
+ */
 @Singleton
 class AudioCaptureManager @Inject constructor(
-     @ApplicationContext private val context: Context
+    @ApplicationContext private val context: Context
 ) {
-    // 실무 포인트 : AI 음성 인식(STT)나 Gemini API는 보통 16kHz,Mono 포맷을 잘인식함
+    // Gemini API / STT는 16kHz Mono PCM을 권장
     private val sampleRate = 16000
     private val channelConfig = AudioFormat.CHANNEL_IN_MONO
     private val audioFormat = AudioFormat.ENCODING_PCM_16BIT
 
     private var audioRecord: AudioRecord? = null
 
-    // 멀티스레드 환경에서 녹음 상태를 안전하게 관맇ㅏrl dnlgo AtomicBoolean 사용
+    // 멀티스레드 환경에서 녹음 상태를 안전하게 관리하기 위해 AtomicBoolean 사용
     private val isRecording = AtomicBoolean(false)
 
     @RequiresPermission(Manifest.permission.RECORD_AUDIO)

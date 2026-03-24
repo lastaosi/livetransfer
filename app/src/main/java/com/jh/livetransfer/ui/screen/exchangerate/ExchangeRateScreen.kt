@@ -8,6 +8,10 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 
+/**
+ * 환율 화면. [STUB / 미구현]
+ * 현재 "준비 중" 텍스트만 표시.
+ */
 @Composable
 fun ExchangeRateScreen() {
     Box(

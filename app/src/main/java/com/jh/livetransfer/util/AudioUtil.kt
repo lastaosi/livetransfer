@@ -1,5 +1,9 @@
 package com.jh.livetransfer.util
 
+/**
+ * PCM / WAV 오디오 유틸리티 모음.
+ * 모든 메서드는 stateless이므로 object 싱글톤으로 선언.
+ */
 object AudioUtil {
 
     /**
@@ -20,8 +24,13 @@ object AudioUtil {
         return (maxAmplitude / 32768f).coerceIn(0f, 1f)
     }
 
-    // 💡 16000Hz, 16bit, Mono 포맷에 맞춘 44바이트 WAV 헤더 생성기
-     fun addWavHeader(pcmData: ByteArray): ByteArray {
+    /**
+     * 순수 PCM 데이터 앞에 44바이트 WAV 헤더를 붙여 반환합니다.
+     * 포맷 고정: 16kHz / 16bit / Mono (Gemini API 권장 포맷).
+     *
+     * WavUtil.kt의 [ByteArray.pcmToWav]와 동일 역할이나 바이트 직접 조작 방식 사용.
+     */
+    fun addWavHeader(pcmData: ByteArray): ByteArray {
         val totalAudioLen = pcmData.size
         val totalDataLen = totalAudioLen + 36
         val longSampleRate = 16000L

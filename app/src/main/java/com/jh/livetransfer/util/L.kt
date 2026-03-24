@@ -5,9 +5,18 @@ import com.orhanobut.logger.AndroidLogAdapter
 import com.orhanobut.logger.Logger
 import com.orhanobut.logger.PrettyFormatStrategy
 
+/**
+ * orhanobut/logger 기반 로깅 유틸리티.
+ *
+ * 특징:
+ * - PRINT_LOG 플래그로 릴리즈 빌드에서 로그를 일괄 차단 가능
+ * - methodOffset(1): L 객체를 거치는 1단계를 무시해 logcat 클릭 시 실제 호출부로 이동
+ * - L.d(Any?): 객체를 자동으로 JSON 직렬화해 Pretty Print
+ * - L.d(titles, contents): 제목-값 쌍을 zip으로 출력 (IndexOutOfBoundsException 방지)
+ */
 object L {
 
-    // 릴리즈 빌드 시 로그 자동 차단
+    // true: 항상 출력 / false: 로그 차단 (릴리즈 빌드 배포 전 false로 변경 권장)
     private val PRINT_LOG = true
     const val LOG_PREFIX = "AI_BIZ"
     private const val LOG_TAG = "${LOG_PREFIX}_LOG"

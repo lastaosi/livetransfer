@@ -10,10 +10,19 @@ import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.withContext
 import javax.inject.Inject
 
+/**
+ * [TranslationRepository] 구현체.
+ * Firebase Vertex AI SDK를 통해 Gemini 모델을 호출한다.
+ * AppModule에서 주입받은 [GenerativeModel]에 시스템 프롬프트(전문 통역사 페르소나)가 이미 설정되어 있다.
+ */
 class TranslationRepositoryImpl @Inject constructor(
     private val generativeModel: GenerativeModel
 ) : TranslationRepository {
 
+    /**
+     * 단일 응답 번역 (non-streaming). 현재 미사용.
+     * blob()으로 WAV 바이트를 인라인 첨부해 Gemini에 전송한다.
+     */
     override suspend fun translateAudio(audioBytes: ByteArray, langA: String, langB: String): String =
         withContext(Dispatchers.IO) {
             val response = generativeModel.generateContent(
@@ -38,6 +47,7 @@ class TranslationRepositoryImpl @Inject constructor(
         langA: String,
         langB: String
     ): Flow<String> = flow {
+        // generateContentStream: 서버에서 청크 단위로 응답이 오며 Flow로 순차 방출
         val responseStream = generativeModel.generateContentStream(
             content {
                 text("입력된 음성을 분석해서, 만약 ${langA}라면 ${langB}로 번역하고, ${langB}라면 ${langA}로 번역해.")
@@ -49,6 +59,11 @@ class TranslationRepositoryImpl @Inject constructor(
         }
     }
 
+    /**
+     * 이미지 OCR + 번역.
+     * ByteArray → Bitmap 변환 후 Gemini에 인라인 이미지로 첨부.
+     * 번역문만 출력하도록 프롬프트에 명시적으로 제약을 건다.
+     */
     override suspend fun translateImage(imageBytes: ByteArray, langA: String, langB: String): String {
         val bitmap = BitmapFactory.decodeByteArray(imageBytes, 0, imageBytes.size)
         val response = generativeModel.generateContent(

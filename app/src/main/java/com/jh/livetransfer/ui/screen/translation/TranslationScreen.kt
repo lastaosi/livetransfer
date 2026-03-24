@@ -57,6 +57,19 @@ import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
 import com.jh.livetransfer.data.model.ChatMessage
 
+/**
+ * 번역 메인 화면.
+ *
+ * 구성:
+ * - TopAppBar: 제목 + 설정 버튼
+ * - ChatListSection: 번역 결과 채팅 목록 (스트리밍 실시간 업데이트)
+ * - AudioVisualizerSection: 실시간 오디오 파형
+ * - BottomControlsSection: 녹음 토글 버튼 + TTS 중지 버튼
+ * - CameraFloatingActionButton: 이미지 촬영 → 번역
+ * - LoadingOverlay: 이미지 번역 로딩 시 화면 전체 딤 처리
+ *
+ * UiEvent(Toast)는 LaunchedEffect에서 SharedFlow를 수집해 표시한다.
+ */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun TranslationScreen(
@@ -205,6 +218,11 @@ private fun AudioVisualizerSection(amplitudes: List<Float>) {
     }
 }
 
+/**
+ * 하단 컨트롤 영역.
+ * - 녹음 버튼: 권한 없으면 먼저 요청 → 승인 시 토글
+ * - TTS 중지 버튼: isTtsSpeaking이 true일 때만 AnimatedVisibility로 표시
+ */
 @Composable
 private fun BottomControlsSection(
     isRecording: Boolean,

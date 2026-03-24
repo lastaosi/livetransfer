@@ -10,9 +10,20 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
+/**
+ * 날씨 화면 ViewModel.
+ *
+ * 상태:
+ * - [currentWeather]: 현재 위치 날씨 (GPS 기반, null이면 미조회)
+ * - [cityWeatherList]: 사용자가 추가한 도시 목록 (중복 체크 포함)
+ * - [isLoading]: 현재 위치 날씨 조회 중 로딩 상태
+ * - [errorMessage]: 에러 발생 시 Toast 메시지용. clearError()로 초기화.
+ *
+ * 도시 목록은 메모리에만 보관 (앱 재시작 시 초기화됨).
+ */
 @HiltViewModel
 class WeatherViewModel @Inject constructor(
-    private val weatherRepository : WeatherRepository
+    private val weatherRepository: WeatherRepository
 ) : ViewModel() {
 
     // 현재 위치 날씨
