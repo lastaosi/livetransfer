@@ -2,9 +2,11 @@ package com.jh.livetransfer.data.repository
 
 import com.jh.livetransfer.data.model.WeatherResponse
 import com.jh.livetransfer.data.remote.KTorClient
+import com.jh.livetransfer.util.L
 import io.ktor.client.call.body
 import io.ktor.client.request.get
 import io.ktor.client.request.parameter
+import io.ktor.client.statement.bodyAsText
 import io.ktor.http.parameters
 import javax.inject.Inject
 
@@ -47,7 +49,9 @@ class WeatherRepository @Inject constructor() {
                 parameter("lon", lon)
                 parameter("appid", apiKey)
                 parameter("units","metric")
+                parameter("lang","ko")
             }
+            L.d("날씨 응답 : ${response.bodyAsText()}")
             Result.success(response.body<WeatherResponse>())
         }catch (e:Exception){
             Result.failure(e)

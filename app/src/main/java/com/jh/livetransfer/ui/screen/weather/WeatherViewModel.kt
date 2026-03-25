@@ -4,6 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.jh.livetransfer.data.model.WeatherResponse
 import com.jh.livetransfer.data.repository.WeatherRepository
+import com.jh.livetransfer.util.L
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -48,7 +49,9 @@ class WeatherViewModel @Inject constructor(
             _isLoading.value = true
             weatherRepository.getWeatherByLocation(lat,lon)
                 .onSuccess { _currentWeather.value = it }
-                .onFailure { _errorMessage.value = "현재 위치 날씨를 가져올수 없어요" }
+                .onFailure {
+                    L.d("날씨 실패 : ${it.message}")
+                    _errorMessage.value = "현재 위치 날씨를 가져올수 없어요" }
             _isLoading.value = false
         }
     }

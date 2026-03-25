@@ -18,6 +18,7 @@ fun getCurrentLocation(context: Context, onLocation: (Double, Double) -> Unit) {
     fusedLocationClient.lastLocation
         .addOnSuccessListener { location ->
             location?.let {
+                L.d("location : ${it.latitude} : ${it.longitude}")
                 onLocation(it.latitude, it.longitude)
             }
         }
