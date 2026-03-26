@@ -3,7 +3,9 @@ package com.jh.livetransfer.ui.screen.exchangerate
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.jh.livetransfer.data.model.ExchangeResponse
-import com.jh.livetransfer.data.repository.ExchangeRepository
+import com.jh.livetransfer.data.repository.ExchangeRepositoryImpl
+import com.jh.livetransfer.domain.usecase.exchange.ConvertCurrencyUseCase
+import com.jh.livetransfer.domain.usecase.exchange.GetExchangeRatesUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -14,14 +16,15 @@ import javax.inject.Inject
  * 환율 계산 화면의 ViewModel.
  *
  * 기준 통화([baseCurrency])와 대상 통화([targetCurrency])가 변경될 때마다
- * [ExchangeRepository]를 통해 최신 환율을 조회하고, 입력 금액([amount])에 곱해
+ * [ExchangeRepositoryImpl]를 통해 최신 환율을 조회하고, 입력 금액([amount])에 곱해
  * [convertedAmount]를 갱신한다.
  *
  * 흐름: 사용자 입력 → [fetchExchangeRate] → [calculateResult] → [convertedAmount] 업데이트
  */
 @HiltViewModel
 class ExchangeViewModel @Inject constructor(
-    private val exchangeRepository: ExchangeRepository
+    private val getExchangeRatesUseCase: GetExchangeRatesUseCase,
+    private val convertCurrencyUseCase: ConvertCurrencyUseCase
 ) : ViewModel() {
     /** 기준 통화 코드 (기본값: "USD") */
     private val _baseCurrency = MutableStateFlow("USD")
@@ -73,16 +76,19 @@ class ExchangeViewModel @Inject constructor(
      * 파싱 불가 입력값은 1.0으로 폴백.
      */
     private fun calculateResult() {
-        val rate = _exchangeRate.value?.rates?.get(_targetCurrency.value)
-        val amountDouble = _amount.value.toDoubleOrNull() ?: 1.0
-        _convertedAmount.value = rate?.let { it * amountDouble }
+        val rates = _exchangeRate.value?.rates ?: return
+        _convertedAmount.value = convertCurrencyUseCase(
+            rates = rates,
+            target = _targetCurrency.value,
+            amount = _amount.value
+        )
     }
 
-    /** [ExchangeRepository]를 호출해 환율을 조회하고, 성공 시 [calculateResult]를 실행한다. */
+    /** [ExchangeRepositoryImpl]를 호출해 환율을 조회하고, 성공 시 [calculateResult]를 실행한다. */
     private fun fetchExchangeRate() {
         viewModelScope.launch {
             _isLoading.value = true
-            exchangeRepository.getExchangeRates(_baseCurrency.value)
+            getExchangeRatesUseCase(_baseCurrency.value)
                 .onSuccess { response ->
                     _exchangeRate.value = response
                     calculateResult()

@@ -4,7 +4,6 @@ import androidx.compose.runtime.Composable
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
-import com.jh.livetransfer.ui.screen.SettingsScreen
 
 /**
  * 번역 탭 내부 중첩 네비게이션.

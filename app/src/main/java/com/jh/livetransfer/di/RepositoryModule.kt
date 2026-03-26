@@ -1,7 +1,12 @@
 package com.jh.livetransfer.di
 
+import com.jh.livetransfer.data.model.Weather
+import com.jh.livetransfer.data.repository.ExchangeRepositoryImpl
 import com.jh.livetransfer.data.repository.TranslationRepositoryImpl
+import com.jh.livetransfer.data.repository.WeatherRepositoryImpl
+import com.jh.livetransfer.domain.repository.ExchangeRepository
 import com.jh.livetransfer.domain.repository.TranslationRepository
+import com.jh.livetransfer.domain.repository.WeatherRepository
 import dagger.Binds
 import dagger.Module
 import dagger.hilt.InstallIn
@@ -22,4 +27,16 @@ abstract class RepositoryModule {
     abstract fun bindTranslationRepository(
         translationRepositoryImpl: TranslationRepositoryImpl
     ): TranslationRepository
+
+    @Binds
+    @Singleton
+    abstract fun bindWeatherRepository(
+        impl : WeatherRepositoryImpl
+    ) : WeatherRepository
+
+    @Binds
+    @Singleton
+    abstract fun bindExchangeRepository(
+        impl : ExchangeRepositoryImpl
+    ) : ExchangeRepository
 }

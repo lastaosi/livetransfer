@@ -1,5 +1,10 @@
 package com.jh.livetransfer.di
 
+import android.content.Context
+import androidx.datastore.core.DataStore
+import androidx.datastore.preferences.core.PreferenceDataStoreFactory
+import androidx.datastore.preferences.core.Preferences
+import androidx.datastore.preferences.preferencesDataStoreFile
 import com.google.firebase.Firebase
 import com.google.firebase.vertexai.GenerativeModel
 import com.google.firebase.vertexai.type.generationConfig
@@ -7,6 +12,7 @@ import com.google.firebase.vertexai.vertexAI
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
+import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
 import javax.inject.Singleton
 
@@ -49,5 +55,13 @@ object AppModule {
                 """.trimIndent())
             }
         )
+    }
+
+    @Provides
+    @Singleton
+    fun provideDataStore(@ApplicationContext context: Context): DataStore<Preferences>{
+        return PreferenceDataStoreFactory.create {
+            context.preferencesDataStoreFile("city_prefs")
+        }
     }
 }

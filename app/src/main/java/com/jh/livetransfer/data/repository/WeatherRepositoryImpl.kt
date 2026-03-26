@@ -2,12 +2,14 @@ package com.jh.livetransfer.data.repository
 
 import com.jh.livetransfer.data.model.WeatherResponse
 import com.jh.livetransfer.data.remote.KTorClient
+import com.jh.livetransfer.data.source.local.CityDataStore
+import com.jh.livetransfer.domain.repository.WeatherRepository
 import com.jh.livetransfer.util.L
 import io.ktor.client.call.body
 import io.ktor.client.request.get
 import io.ktor.client.request.parameter
 import io.ktor.client.statement.bodyAsText
-import io.ktor.http.parameters
+import kotlinx.coroutines.flow.Flow
 import javax.inject.Inject
 
 /**
@@ -20,13 +22,15 @@ import javax.inject.Inject
  * 네트워크 에러를 Result.failure로 래핑해 ViewModel에서 onFailure 처리.
  * 주의: apiKey가 소스코드에 하드코딩되어 있음 — 프로덕션 배포 전 local.properties 등으로 분리 필요.
  */
-class WeatherRepository @Inject constructor() {
+class WeatherRepositoryImpl @Inject constructor(
+    private val cityDataStore: CityDataStore
+) : WeatherRepository {
     private val client = KTorClient.client
     private val apiKey = "08ab4d8c18ea8338110a76f133ccd9a7"
     private val baseUrl = "https://api.openweathermap.org/data/2.5"
 
     //도시명으로 날씨 조회
-    suspend fun getWeatherByCity(city : String) : Result<WeatherResponse>{
+    override suspend fun getWeatherByCity(city : String) : Result<WeatherResponse>{
         return try{
             val response = client.get("$baseUrl/weather"){
                 parameter("q",city)
@@ -42,7 +46,7 @@ class WeatherRepository @Inject constructor() {
     }
 
     // 위도 경도로 날씨 조회(현재위치용)
-    suspend fun getWeatherByLocation(lat:Double,lon:Double) : Result<WeatherResponse>{
+    override suspend fun getWeatherByLocation(lat:Double,lon:Double) : Result<WeatherResponse>{
         return try{
             val response = client.get("$baseUrl/weather") {
                 parameter("lat", lat)
@@ -56,5 +60,13 @@ class WeatherRepository @Inject constructor() {
         }catch (e:Exception){
             Result.failure(e)
         }
+    }
+
+    override fun getSavedCityNames(): Flow<List<String>> {
+        return cityDataStore.cityName
+    }
+
+    override suspend fun saveCityNames(cities: List<String>) {
+        cityDataStore.saveCityNames(cities)
     }
 }

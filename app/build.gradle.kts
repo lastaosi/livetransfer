@@ -5,6 +5,7 @@ plugins {
     alias(libs.plugins.kotlin.kapt)
     alias(libs.plugins.hilt.android)
     alias(libs.plugins.google.services)
+    kotlin("plugin.serialization") version "1.9.22"
 }
 
 android {

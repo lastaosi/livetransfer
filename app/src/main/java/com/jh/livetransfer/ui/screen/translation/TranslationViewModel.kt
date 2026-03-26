@@ -8,6 +8,8 @@ import com.jh.livetransfer.data.repository.SettingsRepository
 import com.jh.livetransfer.data.model.ChatMessage
 import com.jh.livetransfer.data.model.SpeechSpeed
 import com.jh.livetransfer.domain.repository.TranslationRepository
+import com.jh.livetransfer.domain.usecase.translation.TranslateAudioStreamUseCase
+import com.jh.livetransfer.domain.usecase.translation.TranslateImageUseCase
 import com.jh.livetransfer.util.AudioUtil
 import com.jh.livetransfer.util.L
 import com.jh.livetransfer.util.LanguageDetector
@@ -45,7 +47,8 @@ private data class AppSettings(
 @HiltViewModel
 class TranslationViewModel @Inject constructor(
     private val vadProcessor: VadProcessor,
-    private val translationRepository: TranslationRepository,
+    private val translateAudioStreamUseCase: TranslateAudioStreamUseCase,
+    private val translateImageUseCase: TranslateImageUseCase,
     private val ttsManager: TtsManager,
     private val settingsRepository: SettingsRepository
 ) : ViewModel() {
@@ -223,9 +226,8 @@ class TranslationViewModel @Inject constructor(
             var messageIndex = -1
 
             try {
-                translationRepository.translateAudioStream(
-                    wavData, _currentLangA.value, _currentLangB.value
-                ).collect { chunk ->
+                translateAudioStreamUseCase(wavData, _currentLangA.value, _currentLangB.value)
+                .collect { chunk ->
                     chunkResult += chunk
 
                     // 첫 번째 청크에서 언어 판별 (messageIndex 미초기화 상태를 sentinel로 활용)
@@ -281,7 +283,7 @@ class TranslationViewModel @Inject constructor(
                 val stream = ByteArrayOutputStream()
                 bitmap.compress(Bitmap.CompressFormat.JPEG, 80, stream)
 
-                val resultText = translationRepository.translateImage(
+                val resultText = translateImageUseCase(
                     imageBytes = stream.toByteArray(),
                     langA = _currentLangA.value,
                     langB = _currentLangB.value

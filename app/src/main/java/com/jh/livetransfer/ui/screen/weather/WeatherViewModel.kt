@@ -3,7 +3,12 @@ package com.jh.livetransfer.ui.screen.weather
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.jh.livetransfer.data.model.WeatherResponse
-import com.jh.livetransfer.data.repository.WeatherRepository
+import com.jh.livetransfer.data.repository.WeatherRepositoryImpl
+import com.jh.livetransfer.domain.usecase.weather.AddCityWeatherUseCase
+import com.jh.livetransfer.domain.usecase.weather.GetSavedCityNamesUseCase
+import com.jh.livetransfer.domain.usecase.weather.GetWeatherByCityUseCase
+import com.jh.livetransfer.domain.usecase.weather.GetWeatherByLocationUseCase
+import com.jh.livetransfer.domain.usecase.weather.SaveCityNamesUseCase
 import com.jh.livetransfer.util.L
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -24,7 +29,10 @@ import javax.inject.Inject
  */
 @HiltViewModel
 class WeatherViewModel @Inject constructor(
-    private val weatherRepository: WeatherRepository
+    private val getWeatherByLocationUseCase: GetWeatherByLocationUseCase,
+    private val addCityWeatherUseCase: AddCityWeatherUseCase,
+    private val getSavedCityNamesUSeCase: GetSavedCityNamesUseCase,
+    private val saveCityNamesUseCase: SaveCityNamesUseCase
 ) : ViewModel() {
 
     // 현재 위치 날씨
@@ -43,11 +51,14 @@ class WeatherViewModel @Inject constructor(
     private val _errorMessage = MutableStateFlow<String?>(null)
     val errorMessage : StateFlow<String?> = _errorMessage
 
+    init {
+        loadSavedCities()
+    }
     //현재위치 날씨 조회
     fun fetchCurrentLocationWeather(lat:Double,lon:Double){
         viewModelScope.launch{
             _isLoading.value = true
-            weatherRepository.getWeatherByLocation(lat,lon)
+            getWeatherByLocationUseCase(lat,lon)
                 .onSuccess { _currentWeather.value = it }
                 .onFailure {
                     L.d("날씨 실패 : ${it.message}")
@@ -59,12 +70,13 @@ class WeatherViewModel @Inject constructor(
     // 도시 날씨 추가
     fun addCity(city:String){
         viewModelScope.launch {
-            weatherRepository.getWeatherByCity(city)
+            addCityWeatherUseCase(city)
                 .onSuccess { response ->
                     // 중복 도시 체크
                     val isDuplicate = _cityWeatherList.value.any { it.name == response.name }
                     if(!isDuplicate){
                         _cityWeatherList.value = _cityWeatherList.value + response
+                        saveCityNames()
                     }else{
                         _errorMessage.value = "이미 추가된 도시입니다."
                     }
@@ -76,10 +88,29 @@ class WeatherViewModel @Inject constructor(
     // 도시 삭제
     fun removeCity(cityName : String){
         _cityWeatherList.value = _cityWeatherList.value.filter{ it.name != cityName}
+        viewModelScope.launch {
+            saveCityNames()
+        }
+    }
+
+    private suspend fun saveCityNames(){
+        val cityNames = _cityWeatherList.value.map { it.name }
+        saveCityNamesUseCase(cityNames)
     }
 
     // 에러 메시지 초기화
     fun clearError(){
         _errorMessage.value = null
+    }
+
+    private fun loadSavedCities(){
+        viewModelScope.launch {
+            getSavedCityNamesUSeCase().collect { cityNames ->
+                val weatherList = cityNames.map { cityName ->
+                    addCityWeatherUseCase(cityName).getOrNull()
+                }.filterNotNull()
+                _cityWeatherList.value = weatherList
+            }
+        }
     }
 }

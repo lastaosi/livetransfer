@@ -1,4 +1,4 @@
-package com.jh.livetransfer.ui.screen
+package com.jh.livetransfer.ui.screen.translation
 
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Scaffold
@@ -9,7 +9,6 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import com.jh.livetransfer.data.model.SpeechSpeed
-import com.jh.livetransfer.ui.screen.translation.TranslationViewModel
 
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*

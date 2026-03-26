@@ -2,6 +2,7 @@ package com.jh.livetransfer.data.repository
 
 import com.jh.livetransfer.data.model.ExchangeResponse
 import com.jh.livetransfer.data.remote.KTorClient
+import com.jh.livetransfer.domain.repository.ExchangeRepository
 import com.jh.livetransfer.util.L
 import io.ktor.client.call.body
 import io.ktor.client.request.get
@@ -15,7 +16,7 @@ import javax.inject.Inject
  * Ktor HttpClient로 REST 호출. 내부에서 try-catch로 감싸 [Result]로 반환하므로
  * 호출부에서 예외 처리 없이 [Result.onSuccess] / [Result.onFailure]로 분기 가능.
  */
-class ExchangeRepository @Inject constructor() {
+class ExchangeRepositoryImpl @Inject constructor() : ExchangeRepository {
     private val client = KTorClient.client
     private val baseUrl = "https://api.frankfurter.app"
 
@@ -25,7 +26,7 @@ class ExchangeRepository @Inject constructor() {
      * @param base 기준 통화 코드 (기본값: "USD")
      * @return 성공 시 [ExchangeResponse], 실패 시 예외를 담은 [Result]
      */
-    suspend fun getExchangeRates(base: String = "USD"): Result<ExchangeResponse> {
+    override suspend fun getExchangeRates(base: String): Result<ExchangeResponse> {
         return try {
             val response = client.get("$baseUrl/latest"){
                 parameter("from",base)
